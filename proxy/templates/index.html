@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+		integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+	<title>Bytely</title>
+</head>
+
+<body>
+	<h1>Bytely</h1>
+	<p>Shorten URLs here</p>
+	<div>
+		<input type="text" id="url_input" placeholder="paste your URL" />
+		<button id="add_url_btn">Shorten URL!</button>
+	</div>
+	<div>
+		<textarea id="result_url" cols="30" rows="10" style="display: none;"></textarea>
+	</div>
+
+
+	<script>
+		$('#add_url_btn').click(function () {
+			$('#result_url').css('display', 'none');
+			$.ajax({
+				url: '/api/urls',
+				type: 'POST',
+				data: JSON.stringify({
+					url: $('#url_input').val()
+				}),
+				contentType: 'application/json; charset=utf-8',
+				dataType: 'json',
+				async: false,
+				success: function (data) {
+					console.log(data);
+					$('#url_input').val('');
+					$('#url_input').focus();
+					$('#result_url').removeAttr("style");
+					$('#result_url').val(data.short_url);
+				}
+			})
+		})
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,116 @@
+definitions:
+  proxy.getURLStatsResponse:
+    properties:
+      clicks:
+        type: integer
+    type: object
+  proxy.shortenURLRequest:
+    properties:
+      url:
+        type: string
+    type: object
+  proxy.shortenURLResponse:
+    properties:
+      short_url:
+        type: string
+    type: object
+  schema.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /{short_url}:
+    get:
+      description: This endpoint find a correspoding URL for a short URL and redirects
+        to it.
+      parameters:
+      - description: Short URL to redirect to the original URL
+        in: path
+        name: short_url
+        required: true
+        type: string
+      responses:
+        "302":
+          description: ""
+      summary: find a correspoding URL for a short URL and redirects to it.
+  /urls:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint receives a URL and returns a shortened URL.
+      parameters:
+      - description: URL to shorten
+        in: body
+        name: url
+        required: true
+        schema:
+          $ref: '#/definitions/proxy.shortenURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/proxy.shortenURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.ErrorResponse'
+      summary: receives a URL and returns a shortened URL.
+  /urls/{short_url}:
+    delete:
+      description: This endpoint deletes a shortened URL.
+      parameters:
+      - description: Short URL to delete
+        in: path
+        name: short_url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.ErrorResponse'
+      summary: deletes a shortened URL.
+    get:
+      description: This endpoint returns click count for a shortened URL.
+      parameters:
+      - description: Short URL to get stats
+        in: path
+        name: short_url
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/proxy.getURLStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schema.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.ErrorResponse'
+      summary: returns click count for a shortened URL.
+swagger: "2.0"

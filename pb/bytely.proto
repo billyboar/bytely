@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package bytely;
+
+option go_package = "./;pb";
+
+import "google/protobuf/empty.proto";
+
+service BytelyService {
+	rpc AddURL(AddURLRequest) returns (AddURLResponse) {}
+	rpc GetOriginalURL(GetOriginalURLRequest) returns (GetOriginalURLResponse) {}
+	rpc GetURLStats(GetURLStatsRequest) returns (GetURLStatsResponse) {}
+	rpc DeleteURL(DeleteURLRequest) returns (google.protobuf.Empty) {}
+}
+
+message AddURLRequest {
+	string original_url = 1;
+}
+
+message AddURLResponse {
+	string short_url_key = 1;
+}
+
+message GetOriginalURLRequest {
+	string short_url_key = 1;
+}
+
+message GetOriginalURLResponse {
+	string original_url_key = 1;
+}
+
+message GetURLStatsRequest {
+	string short_url_key = 1;
+}
+
+message GetURLStatsResponse {
+	int64 clicks = 1;
+}
+
+message DeleteURLRequest {
+	string short_url_key = 1;
+}
