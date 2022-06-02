@@ -205,6 +205,11 @@ func (s *WebServer) deleteURL(c *gin.Context) {
 // @Router /{short_url} [get]
 func (s *WebServer) redirectURL(c *gin.Context) {
 	shortURL := c.Param("short_url")
+	if shortURL == "favicon.ico" {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
 	grpcReq := &pb.GetOriginalURLRequest{
 		ShortUrl: shortURL,
 	}
@@ -215,6 +220,7 @@ func (s *WebServer) redirectURL(c *gin.Context) {
 			return
 		}
 		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot redirect to URL"))
+		return
 	}
 
 	c.Redirect(http.StatusFound, resp.OriginalUrl)

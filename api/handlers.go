@@ -35,10 +35,11 @@ func (s *Server) generateShortURL(ctx context.Context) (string, error) {
 }
 
 func (s *Server) AddURL(ctx context.Context, req *pb.AddURLRequest) (*pb.AddURLResponse, error) {
+	logger := log.With().Str("method", "AddURL").Logger()
 	// generate short_url
 	shortURL, err := s.generateShortURL(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to generate short url")
+		logger.Error().Err(err).Msg("failed to generate short url")
 		return nil, status.Error(codes.Internal, "failed to generate short url")
 	}
 
@@ -49,12 +50,11 @@ func (s *Server) AddURL(ctx context.Context, req *pb.AddURLRequest) (*pb.AddURLR
 	}
 
 	if err := url.Validate(); err != nil {
-		log.Debug().Err(err).Msg("validation failed")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	if err := s.db.AddURL(ctx, url); err != nil {
-		log.Error().Err(err).Msg("cannot store url")
+		logger.Error().Err(err).Msg("cannot store url")
 		return nil, status.Error(codes.Internal, "failed to add url")
 	}
 
@@ -62,31 +62,33 @@ func (s *Server) AddURL(ctx context.Context, req *pb.AddURLRequest) (*pb.AddURLR
 }
 
 func (s *Server) GetOriginalURL(ctx context.Context, req *pb.GetOriginalURLRequest) (*pb.GetOriginalURLResponse, error) {
+	logger := log.With().Str("method", "GetOriginalURL").Str("short_url", req.ShortUrl).Logger()
 	url, err := s.db.GetURL(ctx, req.ShortUrl)
 	if url == nil && err == nil {
 		return nil, status.Error(codes.NotFound, "url not found")
 	}
 	if err != nil {
-		log.Error().Err(err).Msg("failed to get url")
+		logger.Error().Err(err).Msg("failed to get url")
 		return nil, status.Error(codes.Internal, "failed to fetch url")
 	}
 
 	// use background context because redirect will close off connection
 	// before database can be updated
 	if err := s.db.IncrementClicks(context.Background(), req.ShortUrl); err != nil {
-		log.Error().Err(err).Msg("failed to increment visits")
+		logger.Error().Err(err).Msg("failed to increment visits")
 	}
 
 	return &pb.GetOriginalURLResponse{OriginalUrl: url.OriginalURL}, nil
 }
 
 func (s *Server) GetURLStats(ctx context.Context, req *pb.GetURLStatsRequest) (*pb.GetURLStatsResponse, error) {
+	logger := log.With().Str("method", "GetURLStats").Str("short_url", req.ShortUrl).Logger()
 	url, err := s.db.GetURL(ctx, req.ShortUrl)
 	if url == nil && err == nil {
 		return nil, status.Error(codes.NotFound, "url not found")
 	}
 	if err != nil {
-		log.Error().Err(err).Msg("failed to get url")
+		logger.Error().Err(err).Msg("failed to get url")
 		return nil, status.Error(codes.Internal, "failed to fetch url")
 	}
 
@@ -94,8 +96,10 @@ func (s *Server) GetURLStats(ctx context.Context, req *pb.GetURLStatsRequest) (*
 }
 
 func (s *Server) DeleteURL(ctx context.Context, req *pb.DeleteURLRequest) (*emptypb.Empty, error) {
+	logger := log.With().Str("method", "DeleteURL").Str("short_url", req.ShortUrl).Logger()
 	ok, err := s.db.DeleteURL(ctx, req.ShortUrl)
 	if err != nil {
+		logger.Error().Err(err).Msg("failed to delete url")
 		return nil, status.Error(codes.Internal, "failed to delete url")
 	}
 	if !ok {
